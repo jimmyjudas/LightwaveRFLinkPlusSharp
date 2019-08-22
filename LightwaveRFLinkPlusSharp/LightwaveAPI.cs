@@ -13,17 +13,13 @@ namespace LightwaveRFLinkPlusSharp
 {
     public class LightwaveAPI
     {
-        Uri _baseAddress = new Uri("https://publicapi.lightwaverf.com/v1/");
+        private Uri _baseAddress = new Uri("https://publicapi.lightwaverf.com/v1/");
 
-        private string _bearer;
-        private string _refreshToken;
-        private string _accessToken;
-        private string _authResponseFileName = "auth_response.txt";
+        private Authentication _auth;
 
         public LightwaveAPI(string bearer, string initialRefreshToken = null)
         {
-            _bearer = bearer;
-            _refreshToken = initialRefreshToken;
+            _auth = new Authentication(bearer, initialRefreshToken);
         }
 
         #region Generalised API calls
@@ -38,26 +34,13 @@ namespace LightwaveRFLinkPlusSharp
             return await GetOrPost(uriSegment, CallMode.POST, body);
         }
 
-        private async Task<JObject> GetOrPost(string uriSegment, CallMode callMode, string body, bool gotNewAccessToken = false)
+        private async Task<JObject> GetOrPost(string uriSegment, CallMode callMode, string body, bool forceRefreshAccessToken = false)
         {
-            if (_accessToken == null)
-            {
-                if (File.Exists(_authResponseFileName))
-                {
-                    string previousAuthResponse = File.ReadAllText(_authResponseFileName);
-                    JObject json = JsonConvert.DeserializeObject<JObject>(previousAuthResponse);
-                    _accessToken = json["access_token"].ToString();
-                }
-                else
-                {
-                    await RequestAccessToken();
-                    gotNewAccessToken = true;
-                }
-            }
+            string accessToken = await _auth.GetAccessTokenAsync(forceRefreshAccessToken);
 
             using (var httpClient = new HttpClient { BaseAddress = _baseAddress })
             {
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"bearer {_accessToken}");
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"bearer {accessToken}");
 
                 HttpResponseMessage response;
                 if (callMode == CallMode.POST)
@@ -87,18 +70,8 @@ namespace LightwaveRFLinkPlusSharp
 
                 if (json.ContainsKey("message") && json["message"].ToString() == "Unauthorized")
                 {
-                    //invalid access token
-                    _accessToken = null;
-
-                    if (!gotNewAccessToken)
-                    {
-                        await RequestAccessToken();
-                        return await GetOrPost(uriSegment, callMode, body, true);
-                    }
-                    else
-                    {
-                        throw new Exception();
-                    }
+                    // The access token we were just given doesn't work. Try the call again, this time forcing a refresh of the access token
+                    await GetOrPost(uriSegment, callMode, body, true);
                 }
 
                 return json;
@@ -109,62 +82,6 @@ namespace LightwaveRFLinkPlusSharp
         {
             GET,
             POST
-        }
-
-        private async Task RequestAccessToken(bool useInitialRefreshToken = false)
-        {
-            string refreshToken;
-
-            //If we have a saved access token that may well be more up-to-date than the one passed in, so try that one first
-            if (!useInitialRefreshToken && File.Exists(_authResponseFileName))
-            {
-                string previousAuthResponse = File.ReadAllText(_authResponseFileName);
-                JObject json = JsonConvert.DeserializeObject<JObject>(previousAuthResponse);
-                refreshToken = json["refresh_token"].ToString();
-            }
-            else
-            {
-                refreshToken = _refreshToken;
-                _refreshToken = null;
-            }
-
-            string body = JsonConvert.SerializeObject(new
-            {
-                grant_type = "refresh_token",
-                refresh_token = refreshToken
-            });
-
-            var httpRequestContent = new StringContent(body);
-            httpRequestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            using (var httpClient = new HttpClient { BaseAddress = new Uri("https://auth.lightwaverf.com/") })
-            {
-                httpClient.DefaultRequestHeaders.Add("Authorization", $"basic {_bearer}");
-                using (var response = await httpClient.PostAsync("token", httpRequestContent))
-                {
-                    string responseData = await response.Content.ReadAsStringAsync();
-                    JObject json = JsonConvert.DeserializeObject<JObject>(responseData);
-
-                    if (json.ContainsKey("error") && json["error"].ToString() == "invalid_token")
-                    {
-                        //try using the original refresh code
-                        if (_refreshToken != null)
-                        {
-                            await RequestAccessToken(true);
-                            return;
-                        }
-
-                        throw new Exception();
-                    }
-                    else
-                    {
-                        File.WriteAllText(_authResponseFileName, responseData);
-
-                        _accessToken = json["access_token"].ToString();
-                        _refreshToken = json["refresh_token"].ToString();
-                    }
-                }
-            }
         }
 
         #endregion
