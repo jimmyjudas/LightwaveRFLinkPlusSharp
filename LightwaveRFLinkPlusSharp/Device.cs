@@ -45,7 +45,7 @@ namespace LightwaveRFLinkPlusSharp
         #region Properties for accessing the IDs of known feature types
 
         /// <summary>
-        /// Note, it is simpler to use the typed GetSwitchStateAsync or SetSwitchStateAsync methods directly
+        /// Note, the LightwaveAPI class has typed GetSwitchStateAsync or SetSwitchStateAsync helper methods
         /// </summary>
         public string SwitchFeatureId => GetFeatureId("switch");
 
@@ -83,26 +83,5 @@ namespace LightwaveRFLinkPlusSharp
             Feature match = Features.FirstOrDefault(x => x.Type == type);
             return match?.Id;
         }
-
-        #region Typed helper methods for getting and setting the state of various features
-
-        /// <summary>
-        /// Returns true if the device is switched on, or false if not
-        /// </summary>
-        public async Task<bool> GetSwitchStateAsync(LightwaveAPI api)
-        {
-            int featureValue = await api.GetFeatureValueAsync(SwitchFeatureId);
-            return featureValue == 1 ? true : false;
-        }
-
-        /// <summary>
-        /// Turn the device on or off
-        /// </summary>
-        public async Task SetSwitchStateAsync(bool on, LightwaveAPI api)
-        {
-            await api.SetFeatureValueAsync(SwitchFeatureId, on ? 1 : 0);
-        }
-
-        #endregion
     }
 }

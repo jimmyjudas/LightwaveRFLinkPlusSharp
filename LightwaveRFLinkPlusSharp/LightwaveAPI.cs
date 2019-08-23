@@ -217,5 +217,26 @@ namespace LightwaveRFLinkPlusSharp
         }
 
         #endregion
+
+        #region Typed helper methods for getting and setting the state of various features
+
+        /// <summary>
+        /// Returns true if the device is switched on, or false if not
+        /// </summary>
+        public async Task<bool> GetSwitchStateAsync(Device device)
+        {
+            int featureValue = await GetFeatureValueAsync(device.SwitchFeatureId);
+            return featureValue == 1 ? true : false;
+        }
+
+        /// <summary>
+        /// Turn the device on or off
+        /// </summary>
+        public async Task SetSwitchStateAsync(Device device, bool on)
+        {
+            await SetFeatureValueAsync(device.SwitchFeatureId, on ? 1 : 0);
+        }
+
+        #endregion
     }
 }

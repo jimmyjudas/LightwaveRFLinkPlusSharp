@@ -47,14 +47,17 @@ namespace ExampleApp
             int toggledValue = 1 - featureValue;
 
             // Set this as the new value for the device's switch feature, i.e. turn the device on or off
+            Console.WriteLine($"Changing switch state of {device.Name}...");
             await api.SetFeatureValueAsync(device.SwitchFeatureId, toggledValue);
 
             await Task.Delay(3000);
 
             // Note for some features, there are also typed helper methods for getting and setting states
-            bool on = await device.GetSwitchStateAsync(api);
-            await device.SetSwitchStateAsync(false, api);
+            Console.WriteLine($"Changing one more time...");
+            bool on = await api.GetSwitchStateAsync(device);
+            await api.SetSwitchStateAsync(device, false);
 
+            Console.WriteLine();
             Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
         }
