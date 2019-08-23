@@ -91,7 +91,7 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         public async Task<bool> GetSwitchStateAsync(LightwaveAPI api)
         {
-            int featureValue = await api.GetFeatureValue(SwitchFeatureId);
+            int featureValue = await api.GetFeatureValueAsync(SwitchFeatureId);
             return featureValue == 1 ? true : false;
         }
 
@@ -100,7 +100,7 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         public async Task SetSwitchStateAsync(bool on, LightwaveAPI api)
         {
-            await api.SetFeatureValue(SwitchFeatureId, on ? 1 : 0);
+            await api.SetFeatureValueAsync(SwitchFeatureId, on ? 1 : 0);
         }
 
         #endregion

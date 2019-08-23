@@ -15,7 +15,7 @@ namespace ExampleApp
 
             // Get a list of devices present in the LinkPlus' first "structure". This is a helper method for if your LinkPlus ecosystem 
             // only has a single structure - see https://linkpluspublicapi.docs.apiary.io/#introduction/structure for more details
-            Device[] devices = await api.GetDevicesInFirstStructure();
+            Device[] devices = await api.GetDevicesInFirstStructureAsync();
 
             Console.WriteLine($"{devices.Count()} devices discovered:");
             foreach (var discoveredDevice in devices)
@@ -30,17 +30,17 @@ namespace ExampleApp
             // Get the current value of the device's "switch" feature, i.e. whether it is currently switched on or off. This is done
             // by getting the ID of the device's switch feature and then querying the value of that feature
             string featureId = device.GetFeatureId("switch");
-            int featureValue = await api.GetFeatureValue(featureId);
+            int featureValue = await api.GetFeatureValueAsync(featureId);
 
             // For a lot of the feature types, however, there are helper properties that get the feature ID for you. The above query
             // can therefore be simplified to just:
-            featureValue = await api.GetFeatureValue(device.SwitchFeatureId);
+            featureValue = await api.GetFeatureValueAsync(device.SwitchFeatureId);
 
             // Toggle this switch state
             int toggledValue = 1 - featureValue;
 
             // Set this as the new value for the device's switch feature, i.e. turn the device on or off
-            await api.SetFeatureValue(device.SwitchFeatureId, toggledValue);
+            await api.SetFeatureValueAsync(device.SwitchFeatureId, toggledValue);
 
             await Task.Delay(3000);
 

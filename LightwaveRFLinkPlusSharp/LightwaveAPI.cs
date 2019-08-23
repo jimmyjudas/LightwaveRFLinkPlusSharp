@@ -24,17 +24,17 @@ namespace LightwaveRFLinkPlusSharp
 
         #region Generalised API calls
 
-        private async Task<JObject> Get(string uriSegment)
+        private async Task<JObject> GetAsync(string uriSegment)
         {
-            return await GetOrPost(uriSegment, CallMode.GET, null);
+            return await GetOrPostAsync(uriSegment, CallMode.GET, null);
         }
 
-        private async Task<JObject> Post(string uriSegment, string body)
+        private async Task<JObject> PostAsync(string uriSegment, string body)
         {
-            return await GetOrPost(uriSegment, CallMode.POST, body);
+            return await GetOrPostAsync(uriSegment, CallMode.POST, body);
         }
 
-        private async Task<JObject> GetOrPost(string uriSegment, CallMode callMode, string body, bool forceRefreshAccessToken = false)
+        private async Task<JObject> GetOrPostAsync(string uriSegment, CallMode callMode, string body, bool forceRefreshAccessToken = false)
         {
             string accessToken = await _auth.GetAccessTokenAsync(forceRefreshAccessToken);
 
@@ -71,7 +71,7 @@ namespace LightwaveRFLinkPlusSharp
                 if (json.ContainsKey("message") && json["message"].ToString() == "Unauthorized")
                 {
                     // The access token we were just given doesn't work. Try the call again, this time forcing a refresh of the access token
-                    await GetOrPost(uriSegment, callMode, body, true);
+                    await GetOrPostAsync(uriSegment, callMode, body, true);
                 }
 
                 return json;
@@ -92,9 +92,9 @@ namespace LightwaveRFLinkPlusSharp
         /// Gets the IDs of the structures in your LinkPlus ecosystem. For more details on structures
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure. 
         /// </summary>
-        public async Task<string[]> GetStructures()
+        public async Task<string[]> GetStructuresAsync()
         {
-            JObject json = await Get("structures");
+            JObject json = await GetAsync("structures");
 
             return json["structures"].ToObject<string[]>();
         }
@@ -104,14 +104,14 @@ namespace LightwaveRFLinkPlusSharp
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
-        public async Task<JObject> GetStructure(string structureId)
+        public async Task<JObject> GetStructureAsync(string structureId)
         {
             if (structureId == null)
             {
                 return null;
             }
 
-            return await Get($"structure/{structureId}");
+            return await GetAsync($"structure/{structureId}");
         }
 
         /// <summary>
@@ -120,14 +120,14 @@ namespace LightwaveRFLinkPlusSharp
         /// <param name="featureId">The ID of the feature on the device. This is not the same as the feature
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
         /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
-        public async Task<int> GetFeatureValue(string featureId)
+        public async Task<int> GetFeatureValueAsync(string featureId)
         {
             if (featureId == null)
             {
                 return -1;
             }
 
-            JObject json = await Get($"feature/{featureId}");
+            JObject json = await GetAsync($"feature/{featureId}");
             return json["value"].ToObject<int>();
         }
 
@@ -138,14 +138,14 @@ namespace LightwaveRFLinkPlusSharp
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
         /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
         /// <param name="newValue">The numerical value to which you want to set the feature</param>
-        public async Task SetFeatureValue(string featureId, int newValue)
+        public async Task SetFeatureValueAsync(string featureId, int newValue)
         {
             string body = JsonConvert.SerializeObject(new
             {
                 value = newValue
             });
 
-            await Post($"feature/{featureId}", body);
+            await PostAsync($"feature/{featureId}", body);
             return;
         }
 
@@ -155,34 +155,34 @@ namespace LightwaveRFLinkPlusSharp
 
         /// <summary>
         /// Gets the details of the first "structure" in your LinkPlus ecosystem. This is a helper for if your ecosystem 
-        /// only has a single structure; if you have more than one, use GetStructures instead. For more details on structures, 
+        /// only has a single structure; if you have more than one, use GetStructuresAsync instead. For more details on structures, 
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
-        public async Task<JObject> GetFirstStructure()
+        public async Task<JObject> GetFirstStructureAsync()
         {
-            string[] structures = await GetStructures();
+            string[] structures = await GetStructuresAsync();
             string structureId = structures[0];
-            return await GetStructure(structureId);
+            return await GetStructureAsync(structureId);
         }
 
         /// <summary>
         /// Gets the details of the devices in the first structure in your LinkPlus ecosystem. This is a helper for if your ecosystem 
-        /// only has a single structure; if you have more than one, use GetStructures and GetDevices instead. For more details on 
+        /// only has a single structure; if you have more than one, use GetStructuresAsync and GetDevicesAsync instead. For more details on 
         /// structures, see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
-        public async Task<Device[]> GetDevicesInFirstStructure()
+        public async Task<Device[]> GetDevicesInFirstStructureAsync()
         {
-            return GetDevices(await GetFirstStructure());
+            return GetDevices(await GetFirstStructureAsync());
         }
 
         /// <summary>
         /// Gets the details for the devices in a specified structure. For more details on structures,
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
-        public async Task<Device[]> GetDevices(string structureId)
+        public async Task<Device[]> GetDevicesAsync(string structureId)
         {
-            JObject json = await GetStructure(structureId);
+            JObject json = await GetStructureAsync(structureId);
 
             return GetDevices(json);
         }
