@@ -149,6 +149,16 @@ namespace LightwaveRFLinkPlusSharp
             return;
         }
 
+        public async Task<Dictionary<string, int>> GetFeatureValuesAsync(IEnumerable<string> featureIds)
+        {
+            var featureIdsArray = featureIds.Select(x => new { featureId = x });
+            string body = JsonConvert.SerializeObject(new { features = featureIdsArray });
+
+            JObject json = await PostAsync("features/read", body);
+
+            return json.ToObject<Dictionary<string, int>>();
+        }
+
         #endregion
 
         #region Helper Methods
@@ -190,6 +200,20 @@ namespace LightwaveRFLinkPlusSharp
         private Device[] GetDevices(JObject structureJson)
         {
             return structureJson["devices"].Select(x => new Device(x)).ToArray();
+        }
+
+        public async Task PopulateFeatureValuesAsync(Device device)
+        {
+            Dictionary<string, int> featureValues = await GetFeatureValuesAsync(device.Features.Select(x => x.Id));
+
+            foreach (var featureValue in featureValues)
+            {
+                var matchingFeature = device.Features.FirstOrDefault(x => x.Id == featureValue.Key);
+                if (matchingFeature != null)
+                {
+                    matchingFeature.Value = featureValue.Value;
+                }
+            }
         }
 
         #endregion

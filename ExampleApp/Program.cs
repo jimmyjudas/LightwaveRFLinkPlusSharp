@@ -21,6 +21,13 @@ namespace ExampleApp
             foreach (var discoveredDevice in devices)
             {
                 Console.WriteLine($"\t{discoveredDevice.Name}");
+
+                await api.PopulateFeatureValuesAsync(discoveredDevice);
+
+                foreach (var deviceFeature in discoveredDevice.Features)
+                {
+                    Console.WriteLine($"\t\t{deviceFeature}");
+                }
             }
             Console.WriteLine();
 
