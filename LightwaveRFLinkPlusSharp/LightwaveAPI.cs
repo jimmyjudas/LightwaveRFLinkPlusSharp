@@ -104,14 +104,14 @@ namespace LightwaveRFLinkPlusSharp
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
-        public async Task<JObject> GetStructureAsync(string structureId)
+        public async Task<Structure> GetStructureAsync(string structureId)
         {
             if (structureId == null)
             {
                 return null;
             }
 
-            return await GetAsync($"structure/{structureId}");
+            return new Structure(await GetAsync($"structure/{structureId}"));
         }
 
         /// <summary>
@@ -146,7 +146,6 @@ namespace LightwaveRFLinkPlusSharp
             });
 
             await PostAsync($"feature/{featureId}", body);
-            return;
         }
 
         public async Task<Dictionary<string, int>> GetFeatureValuesAsync(IEnumerable<string> featureIds)
@@ -169,7 +168,7 @@ namespace LightwaveRFLinkPlusSharp
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
-        public async Task<JObject> GetFirstStructureAsync()
+        public async Task<Structure> GetFirstStructureAsync()
         {
             string[] structures = await GetStructuresAsync();
             string structureId = structures[0];
@@ -183,7 +182,8 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         public async Task<Device[]> GetDevicesInFirstStructureAsync()
         {
-            return GetDevices(await GetFirstStructureAsync());
+            Structure structure = await GetFirstStructureAsync();
+            return structure.Devices;
         }
 
         /// <summary>
@@ -192,15 +192,10 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         public async Task<Device[]> GetDevicesAsync(string structureId)
         {
-            JObject json = await GetStructureAsync(structureId);
-
-            return GetDevices(json);
+            Structure structure = await GetStructureAsync(structureId);
+            return structure.Devices;
         }
 
-        private Device[] GetDevices(JObject structureJson)
-        {
-            return structureJson["devices"].Select(x => new Device(x)).ToArray();
-        }
 
         public async Task PopulateFeatureValuesAsync(Device device)
         {

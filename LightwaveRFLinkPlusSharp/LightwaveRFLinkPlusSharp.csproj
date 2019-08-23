@@ -49,6 +49,7 @@
     <Compile Include="Feature.cs" />
     <Compile Include="LightwaveAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Structure.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
