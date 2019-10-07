@@ -12,13 +12,16 @@ namespace LightwaveRFLinkPlusSharp
         public string Id { get; set; }
         public int? Value { get; set; }
 
-        public Feature(string type, string id, int? value = null)
+        internal Feature(string type, string id, int? value = null)
         {
             Type = type;
             Id = id;
             Value = value;
         }
 
+        /// <summary>
+        /// Displays the Feature's Type and Value, if it has one
+        /// </summary>
         public override string ToString()
         {
             string output = Type;

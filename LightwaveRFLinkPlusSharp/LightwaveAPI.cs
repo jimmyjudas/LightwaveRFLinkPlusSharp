@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -17,6 +18,13 @@ namespace LightwaveRFLinkPlusSharp
 
         private Authentication _auth;
 
+        /// <summary>
+        /// In order to connect to the Lightwave API you must provide a bearer ID and an initial refresh token. You can get these
+        /// from https://my.lightwaverf.com > Settings > API. (The bearer ID is the long string labelled "Basic" for some reason.)
+        /// During use of the API, further refresh tokens will be provided which will be handled for you automatically. If you stop
+        /// being able to access the API at any point, however, you will have to request a new refresh token from the Lightwave site
+        /// and provide it in this constructor.
+        /// </summary>
         public LightwaveAPI(string bearer, string initialRefreshToken = null)
         {
             _auth = new Authentication(bearer, initialRefreshToken);
@@ -163,7 +171,7 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         /// <param name="featureId">The ID of the feature on the device. This is not the same as the feature
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
-        /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
+        /// (e.g. <see cref="Device.SwitchFeatureId"/>) or the generic <see cref="Device.GetFeatureId(string)"/></param>
         /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
         /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
         /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
@@ -194,7 +202,7 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         /// <param name="featureId">The ID of the feature on the device. This is not the same as the feature
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
-        /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
+        /// (e.g. <see cref="Device.SwitchFeatureId"/>) or the generic <see cref="Device.GetFeatureId(string)"/></param>
         /// <param name="newValue">The numerical value to which you want to set the feature</param>
         /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
         /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
@@ -221,6 +229,11 @@ namespace LightwaveRFLinkPlusSharp
             }
         }
 
+        /// <summary>
+        /// Gets the values of a collection of specified features, e.g. whether the device is on or off
+        /// </summary>
+        /// <param name="featureIds">A collection of feature IDs</param>
+        /// <returns>A dictionary of the feature IDs and values. Any unknown feature IDs will return with a value of 0. Any invalid feature IDs will result in a <see cref="LightwaveAPIRequestException"/> being thrown</returns>
         /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
         /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Dictionary<string, int>> GetFeatureValuesAsync(IEnumerable<string> featureIds)
@@ -249,7 +262,7 @@ namespace LightwaveRFLinkPlusSharp
 
         /// <summary>
         /// Gets the details of the first "structure" in your LinkPlus ecosystem. This is a helper for if your ecosystem 
-        /// only has a single structure; if you have more than one, use GetStructuresAsync instead. For more details on structures, 
+        /// only has a single structure; if you have more than one, use <see cref="GetStructuresAsync"/> instead. For more details on structures, 
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
@@ -272,7 +285,7 @@ namespace LightwaveRFLinkPlusSharp
 
         /// <summary>
         /// Gets the details of the devices in the first structure in your LinkPlus ecosystem. This is a helper for if your ecosystem 
-        /// only has a single structure; if you have more than one, use GetStructuresAsync and GetDevicesAsync instead. For more details on 
+        /// only has a single structure; if you have more than one, use <see cref="GetStructuresAsync"/> and <see cref="GetDevicesAsync(string)"/> instead. For more details on 
         /// structures, see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <exception cref="NoStructuresFoundException">Thrown when no Structures can be found in your LinkPlus ecosystem</exception>
@@ -298,7 +311,10 @@ namespace LightwaveRFLinkPlusSharp
             return structure.Devices;
         }
 
-
+        /// <summary>
+        /// Populates the specified device's Features with their current values
+        /// </summary>
+        /// <param name="device"></param>
         /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
         /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task PopulateFeatureValuesAsync(Device device)

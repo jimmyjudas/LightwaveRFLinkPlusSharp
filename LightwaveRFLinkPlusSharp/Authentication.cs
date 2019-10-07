@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -11,6 +12,18 @@ using System.Threading.Tasks;
 
 namespace LightwaveRFLinkPlusSharp
 {
+    /// <summary>
+    /// To use the API, the user will have provided a seed refresh token. This will be used to get an access token and a new refresh token. Once the access token expires, the
+    /// new refresh token will be used to get another pair of new access and refresh tokens. Etc. As the program may be restarted during this process, we cannot rely on these
+    /// tokens being available in memory, so they are also written to a text file (in AppData\Roaming\LightwaveRFLinkPlusSharp) so they can be read back in at a later date. The
+    /// flow for accessing the API therefore goes as follows. Starting in <see cref="GetAccessTokenAsync"/>:
+    /// 1. Use the access token in memory if there is one, otherwise, use the one saved in AppData
+    /// 2. If there is no saved access token available, or the access token does not work, request a new one
+    /// The flow then moves to <see cref="RefreshAccessTokenAsync"/>:
+    /// 3. Use the refresh token in memory if there is one, otherwise, use the one saved in AppData. If this does not exist, or the saved token has already not worked, use the
+    ///    seed refresh token that was initially provided to the class.
+    /// 4. If the seed refresh token stops working at any point, the user will need to request a new refresh token from the Lightwave site
+    /// </summary>
     internal class Authentication
     {
         private string _bearer;
@@ -29,6 +42,11 @@ namespace LightwaveRFLinkPlusSharp
             _seedRefreshToken = seedRefreshToken;
         }
 
+        /// <summary>
+        /// This will return an access token for the API, requesting a new one if needed
+        /// </summary>
+        /// <param name="uniqueRequestIdentifier">A unique ID for the request which is used to determine whether this is the second attempt to ask for an access token
+        /// for the same API request. If this is the case, we know the first access token provided did not work and needs refreshing</param>
         internal async Task<string> GetAccessTokenAsync(Guid uniqueRequestIdentifier)
         {
             bool forceRefresh = false;
@@ -91,9 +109,9 @@ namespace LightwaveRFLinkPlusSharp
         }
 
         /// <summary>
-        /// 
+        /// Attempts to refresh the access token using the refresh token
         /// </summary>
-        /// <param name="useSeedRefreshToken"></param>
+        /// <param name="useSeedRefreshToken">Whether to use the refresh token from a previous run, or the seed refresh token provided by the user</param>
         private async Task RefreshAccessTokenAsync(bool useSeedRefreshToken = false)
         {
             _previousRequestRequiredRefresh = true;
