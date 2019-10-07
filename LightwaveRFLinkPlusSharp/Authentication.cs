@@ -17,51 +17,74 @@ namespace LightwaveRFLinkPlusSharp
         private string _seedRefreshToken;
         private string _currentRefreshToken;
         private string _currentAccessToken;
-        private string _authResponseFileName = "auth_response.txt";
+        private string _authResponseFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), nameof(LightwaveRFLinkPlusSharp), "auth_response.txt");
 
-        private bool _justRefreshedAccessToken = false;
+        private Guid? _previousRequestIdentifier = null;
+        private bool _previousRequestRequiredRefresh = false;
+        private StringBuilder _tokenRequestLog = new StringBuilder();
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bearer"></param>
-        /// <param name="seedRefreshToken"></param>
-        public Authentication(string bearer, string seedRefreshToken = null)
+        internal Authentication(string bearer, string seedRefreshToken = null)
         {
             _bearer = bearer;
             _seedRefreshToken = seedRefreshToken;
         }
 
-        public async Task<string> GetAccessTokenAsync(bool forceRefreshAccessToken = false)
+        internal async Task<string> GetAccessTokenAsync(Guid uniqueRequestIdentifier)
         {
-            if (_justRefreshedAccessToken && forceRefreshAccessToken)
+            bool forceRefresh = false;
+            if (uniqueRequestIdentifier != _previousRequestIdentifier)
             {
-                // The last time we asked for an access token it didn't work, but we had just refreshed it
-                // so there's nothing we can do now
-                throw new Exception();//?????????????????????????????????????
+                //This is the first attempt to get an access token for this request
+                _previousRequestIdentifier = uniqueRequestIdentifier;
+                _previousRequestRequiredRefresh = false;
+                _tokenRequestLog.Clear();
+            }
+            else
+            {
+                //This the 2nd attempt to get an access token for this request, so the previously returned one obviously didn't
+                //work. Try refreshing the token this time.
+                forceRefresh = true;
             }
 
-            if (forceRefreshAccessToken) // The last time we asked for an access token it didn't work, so refresh it
+            _tokenRequestLog.AppendLine($"Access token requested for request {uniqueRequestIdentifier}");
+            
+            if (forceRefresh)
             {
+                if (_previousRequestRequiredRefresh) // Alas, we already attempted to refresh the token last time so there's nothing we can do now
+                {
+                    throw new Exception();
+                }
+
+                //Try refreshing the access token this time
+                _tokenRequestLog.AppendLine("Force refresh triggered");
                 await RefreshAccessTokenAsync();
-                _justRefreshedAccessToken = true;
+                
             }
             else if (_currentAccessToken != null) // We have an access token in memory, so use that one
             {
-                // Do nothing - just return the token later
-                _justRefreshedAccessToken = false;
+                // Do nothing - just return the token at the end of the method
+                _tokenRequestLog.AppendLine("Using access token in memory");
             }
             else if (File.Exists(_authResponseFileName)) // We don't have the access token in memory yet, so see if we have one stored from a previous request
             {
+                _tokenRequestLog.AppendLine("Getting previous access token from file");
                 string previousAuthResponse = File.ReadAllText(_authResponseFileName);
                 JObject json = JsonConvert.DeserializeObject<JObject>(previousAuthResponse);
                 _currentAccessToken = json["access_token"].ToString();
-                _justRefreshedAccessToken = false;
             }
             else // Otherwise request a new one from Lightwave
             {
                 await RefreshAccessTokenAsync();
-                _justRefreshedAccessToken = true;
+            }
+
+            if (Debugger.IsAttached && _previousRequestRequiredRefresh)
+            {
+                Console.WriteLine();
+                Console.WriteLine("************************");
+                Console.WriteLine("Token Request Log:");
+                Console.Write(_tokenRequestLog.ToString());
+                Console.WriteLine("************************");
+                Console.WriteLine();
             }
 
             return _currentAccessToken;
@@ -73,22 +96,30 @@ namespace LightwaveRFLinkPlusSharp
         /// <param name="useSeedRefreshToken"></param>
         private async Task RefreshAccessTokenAsync(bool useSeedRefreshToken = false)
         {
+            _previousRequestRequiredRefresh = true;
+
+            _tokenRequestLog.AppendLine("Refreshing access token");
+
             if (useSeedRefreshToken)
             {
+                _tokenRequestLog.AppendLine("\tUsing Seed refresh token (forced)");
                 _currentRefreshToken = _seedRefreshToken;
             }
             else if (_currentRefreshToken != null)
             {
                 //Keep using the current refresh token
+                _tokenRequestLog.AppendLine("\tUsing refresh token in memory");
             }
             else if (File.Exists(_authResponseFileName))
             {
+                _tokenRequestLog.AppendLine("\tUsing previous refresh token from file");
                 string previousAuthResponse = File.ReadAllText(_authResponseFileName);
                 JObject json = JsonConvert.DeserializeObject<JObject>(previousAuthResponse);
                 _currentRefreshToken = json["refresh_token"].ToString();
             }
             else
             {
+                _tokenRequestLog.AppendLine("\tUsing Seed refresh token");
                 _currentRefreshToken = _seedRefreshToken;
             }
 
@@ -111,11 +142,13 @@ namespace LightwaveRFLinkPlusSharp
 
                     if (json.ContainsKey("error") && json["error"].ToString() == "invalid_token")
                     {
-                        if (useSeedRefreshToken)
+                        if (_currentRefreshToken == _seedRefreshToken)
                         {
                             //We've already tried to use the seed refresh token, so we're stuck
                             throw new Exception(); //????????????????????????????????????????????
                         }
+
+                        _tokenRequestLog.AppendLine("Refresh failed. Try again using the seed refresh token.");
 
                         //try using the seed refresh code
                         await RefreshAccessTokenAsync(true);

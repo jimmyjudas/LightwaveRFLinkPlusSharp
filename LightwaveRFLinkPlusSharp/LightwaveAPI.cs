@@ -34,44 +34,66 @@ namespace LightwaveRFLinkPlusSharp
             return await GetOrPostAsync(uriSegment, CallMode.POST, body);
         }
 
-        private async Task<JObject> GetOrPostAsync(string uriSegment, CallMode callMode, string body, bool forceRefreshAccessToken = false)
+        private async Task<JObject> GetOrPostAsync(string uriSegment, CallMode callMode, string body, Guid? uniqueRequestIdentifier = null)
         {
-            string accessToken = await _auth.GetAccessTokenAsync(forceRefreshAccessToken);
+            if (!uniqueRequestIdentifier.HasValue)
+            {
+                //This is a new request
+                uniqueRequestIdentifier = Guid.NewGuid();
+            }
+
+            string accessToken = await _auth.GetAccessTokenAsync(uniqueRequestIdentifier.Value);
 
             using (var httpClient = new HttpClient { BaseAddress = _baseAddress })
             {
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"bearer {accessToken}");
 
-                HttpResponseMessage response;
-                if (callMode == CallMode.POST)
+                HttpResponseMessage response = null;
+                JObject json = null;
+                Exception exception = null;
+                try
                 {
-                    if (body == null)
+                    if (callMode == CallMode.POST)
                     {
-                        throw new Exception();
+                        if (body == null)
+                        {
+                            throw new InvalidDataException("Trying to POST without any body will fail");
+                        }
+
+                        var httpRequestContent = new StringContent(body);
+                        httpRequestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                        response = await httpClient.PostAsync(_baseAddress + uriSegment, httpRequestContent);
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            exception = new Exception();
+                        }
+                    }
+                    else
+                    {
+                        response = await httpClient.GetAsync(_baseAddress + uriSegment);
+                        if (response.StatusCode != HttpStatusCode.OK)
+                        {
+                            exception = new Exception();
+                        }
                     }
 
-                    var httpRequestContent = new StringContent(body);
-                    httpRequestContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    response = await httpClient.PostAsync(_baseAddress + uriSegment, httpRequestContent);
-                    if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                    string responseData = await response.Content.ReadAsStringAsync();
+                    json = JsonConvert.DeserializeObject<JObject>(responseData);
+                }
+                finally
+                {
+                    response?.Dispose();
+                }
+
+                if (exception != null)
+                {
+                    if (json != null && json["message"]?.ToString() == "Unauthorized")
                     {
-                        throw new Exception();
+                        // The access token we were just given doesn't work. Try the call again, this time forcing a refresh of the access token
+                        return await GetOrPostAsync(uriSegment, callMode, body, uniqueRequestIdentifier);
                     }
-                }
-                else
-                {
-                    response = await httpClient.GetAsync(_baseAddress + uriSegment);
-                }
 
-                string responseData = await response.Content.ReadAsStringAsync();
-                JObject json = JsonConvert.DeserializeObject<JObject>(responseData);
-
-                response.Dispose();
-
-                if (json.ContainsKey("message") && json["message"].ToString() == "Unauthorized")
-                {
-                    // The access token we were just given doesn't work. Try the call again, this time forcing a refresh of the access token
-                    await GetOrPostAsync(uriSegment, callMode, body, true);
+                    throw exception;
                 }
 
                 return json;
