@@ -14,7 +14,7 @@ namespace LightwaveRFLinkPlusSharp
 
         /// <summary>
         /// A list of the device's features. If you are wanting a specific feature's ID, use one of the helper
-        /// properties (e.g. SwitchFeatureId) or the generic GetFeatureId instead
+        /// properties (e.g. <see cref="SwitchFeatureId"/>) or the generic <see cref="GetFeatureId(string)"/> instead
         /// </summary>
         public List<Feature> Features { get; }
 
@@ -67,7 +67,7 @@ namespace LightwaveRFLinkPlusSharp
         #region Properties for accessing the IDs of known feature types
 
         /// <summary>
-        /// Note, the LightwaveAPI class has typed GetSwitchStateAsync or SetSwitchStateAsync helper methods
+        /// Note, the LightwaveAPI class has typed <see cref="LightwaveAPI.GetSwitchStateAsync(Device)"/> or <see cref="LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
         /// </summary>
         public string SwitchFeatureId => GetFeatureId("switch");
 
@@ -99,7 +99,7 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         /// <param name="type">The "type" of the device's desired feature, e.g. the "switch" feature controls whether the device
         /// is turned on or not</param>
-        /// <returns>The ID of the device's feature, which can then be used with GetFeatureValue or SetFeatureValue</returns>
+        /// <returns>The ID of the device's feature, which can then be used with <see cref="LightwaveAPI.GetFeatureValueAsync(string)"/> or <see cref="LightwaveAPI.SetFeatureValueAsync(string, int)"/></returns>
         public string GetFeatureId(string type)
         {
             Feature match = Features.FirstOrDefault(x => x.Type == type);
