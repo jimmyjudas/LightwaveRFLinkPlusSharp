@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Authentication.cs" />
     <Compile Include="Device.cs" />
+    <Compile Include="Exceptions.cs" />
     <Compile Include="Feature.cs" />
     <Compile Include="LightwaveAPI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

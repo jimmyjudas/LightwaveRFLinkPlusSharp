@@ -52,7 +52,7 @@ namespace LightwaveRFLinkPlusSharp
             {
                 if (_previousRequestRequiredRefresh) // Alas, we already attempted to refresh the token last time so there's nothing we can do now
                 {
-                    throw new Exception();
+                    throw new InvalidRefreshTokenException(_tokenRequestLog.ToString());
                 }
 
                 //Try refreshing the access token this time
@@ -145,7 +145,7 @@ namespace LightwaveRFLinkPlusSharp
                         if (_currentRefreshToken == _seedRefreshToken)
                         {
                             //We've already tried to use the seed refresh token, so we're stuck
-                            throw new Exception(); //????????????????????????????????????????????
+                            throw new InvalidRefreshTokenException(_tokenRequestLog.ToString());
                         }
 
                         _tokenRequestLog.AppendLine("Refresh failed. Try again using the seed refresh token.");
