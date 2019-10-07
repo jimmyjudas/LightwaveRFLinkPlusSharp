@@ -20,25 +20,47 @@ namespace LightwaveRFLinkPlusSharp
 
         internal Device(JToken deviceJson)
         {
-            Id = deviceJson["deviceId"].ToString();
-            Name = deviceJson["name"].ToString();
-
-            Features = new List<Feature>();
-
-            JToken featureSets = deviceJson["featureSets"];
-            if (featureSets != null)
+            try
             {
-                foreach (var featureSet in featureSets)
+                Id = deviceJson["deviceId"].ToString();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse device ID", deviceJson.ToString());
+            }
+
+            try
+            {
+                Name = deviceJson["name"].ToString();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse device name", deviceJson.ToString());
+            }
+
+            try
+            {
+                Features = new List<Feature>();
+
+                JToken featureSets = deviceJson["featureSets"];
+                if (featureSets != null)
                 {
-                    JToken features = featureSet["features"];
-                    if (features != null)
+                    foreach (var featureSet in featureSets)
                     {
-                        foreach (var feature in features)
+                        JToken features = featureSet["features"];
+                        if (features != null)
                         {
-                            Features.Add(new Feature(feature["type"].ToString(), feature["featureId"].ToString()));
+                            foreach (var feature in features)
+                            {
+                                Features.Add(new Feature(feature["type"].ToString(), feature["featureId"].ToString()));
+                            }
                         }
                     }
                 }
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse device's features", deviceJson.ToString());
             }
         }
 

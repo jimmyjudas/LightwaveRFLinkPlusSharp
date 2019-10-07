@@ -50,7 +50,7 @@ namespace LightwaveRFLinkPlusSharp
 
                 HttpResponseMessage response = null;
                 JObject json = null;
-                Exception exception = null;
+                LightwaveAPIRequestException exception = null;
                 try
                 {
                     if (callMode == CallMode.POST)
@@ -65,7 +65,7 @@ namespace LightwaveRFLinkPlusSharp
                         response = await httpClient.PostAsync(_baseAddress + uriSegment, httpRequestContent);
                         if (response.StatusCode != HttpStatusCode.OK)
                         {
-                            exception = new Exception();
+                            exception = new LightwaveAPIRequestException($"POST to {uriSegment} failed with status {response.StatusCode}. Body was: {body}.", response.StatusCode);
                         }
                     }
                     else
@@ -73,7 +73,7 @@ namespace LightwaveRFLinkPlusSharp
                         response = await httpClient.GetAsync(_baseAddress + uriSegment);
                         if (response.StatusCode != HttpStatusCode.OK)
                         {
-                            exception = new Exception();
+                            exception = new LightwaveAPIRequestException($"GET from {uriSegment} failed with status {response.StatusCode}", response.StatusCode);
                         }
                     }
 
@@ -114,11 +114,23 @@ namespace LightwaveRFLinkPlusSharp
         /// Gets the IDs of the structures in your LinkPlus ecosystem. For more details on structures
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure. 
         /// </summary>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<string[]> GetStructuresAsync()
         {
             JObject json = await GetAsync("structures");
 
-            return json["structures"].ToObject<string[]>();
+            string[] structures;
+            try
+            {
+                structures = json["structures"].ToObject<string[]>();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse 'structures' array", json.ToString());
+            }
+
+            return structures;
         }
 
         /// <summary>
@@ -126,6 +138,9 @@ namespace LightwaveRFLinkPlusSharp
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
+        /// <exception cref="StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Structure> GetStructureAsync(string structureId)
         {
             if (structureId == null)
@@ -133,7 +148,14 @@ namespace LightwaveRFLinkPlusSharp
                 return null;
             }
 
-            return new Structure(await GetAsync($"structure/{structureId}"));
+            JObject json = await GetAsync($"structure/{structureId}");
+
+            if (json != null && json["message"]?.ToString() == "Discovery Failed")
+            {
+                throw new StructureNotFoundException(structureId);
+            }
+
+            return new Structure(json);
         }
 
         /// <summary>
@@ -142,15 +164,29 @@ namespace LightwaveRFLinkPlusSharp
         /// <param name="featureId">The ID of the feature on the device. This is not the same as the feature
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
         /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<int> GetFeatureValueAsync(string featureId)
         {
-            if (featureId == null)
+            JObject json = await GetAsync($"feature/{featureId}");
+
+            if (json != null && json.ContainsKey("message") && json["message"].ToString().Contains("Invalid feature id"))
             {
-                return -1;
+                throw new FeatureNotFoundException(featureId);
             }
 
-            JObject json = await GetAsync($"feature/{featureId}");
-            return json["value"].ToObject<int>();
+            int featureValue;
+            try
+            {
+                featureValue = json["value"].ToObject<int>();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse 'value' object", json.ToString());
+            }
+
+            return featureValue;
         }
 
         /// <summary>
@@ -160,6 +196,9 @@ namespace LightwaveRFLinkPlusSharp
         /// _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
         /// (e.g. SwitchFeatureId) or the generic GetFeatureId</param>
         /// <param name="newValue">The numerical value to which you want to set the feature</param>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task SetFeatureValueAsync(string featureId, int newValue)
         {
             string body = JsonConvert.SerializeObject(new
@@ -167,9 +206,23 @@ namespace LightwaveRFLinkPlusSharp
                 value = newValue
             });
 
-            await PostAsync($"feature/{featureId}", body);
+            try
+            {
+                await PostAsync($"feature/{featureId}", body);
+            }
+            catch (LightwaveAPIRequestException ex)
+            {
+                if (ex.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    throw new FeatureNotFoundException(featureId);
+                }
+
+                throw;
+            }
         }
 
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Dictionary<string, int>> GetFeatureValuesAsync(IEnumerable<string> featureIds)
         {
             var featureIdsArray = featureIds.Select(x => new { featureId = x });
@@ -177,7 +230,17 @@ namespace LightwaveRFLinkPlusSharp
 
             JObject json = await PostAsync("features/read", body);
 
-            return json.ToObject<Dictionary<string, int>>();
+            Dictionary<string, int> results;
+            try
+            {
+                results = json.ToObject<Dictionary<string, int>>();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse feature values", json.ToString());
+            }
+
+            return results;
         }
 
         #endregion
@@ -190,9 +253,19 @@ namespace LightwaveRFLinkPlusSharp
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
         /// <returns>A JSON object describing the structure</returns>
+        /// <exception cref="NoStructuresFoundException">Thrown when no Structures can be found in your LinkPlus ecosystem</exception>
+        /// <exception cref="StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Structure> GetFirstStructureAsync()
         {
             string[] structures = await GetStructuresAsync();
+
+            if (!structures.Any())
+            {
+                throw new NoStructuresFoundException();
+            }
+
             string structureId = structures[0];
             return await GetStructureAsync(structureId);
         }
@@ -202,6 +275,10 @@ namespace LightwaveRFLinkPlusSharp
         /// only has a single structure; if you have more than one, use GetStructuresAsync and GetDevicesAsync instead. For more details on 
         /// structures, see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
+        /// <exception cref="NoStructuresFoundException">Thrown when no Structures can be found in your LinkPlus ecosystem</exception>
+        /// <exception cref="StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Device[]> GetDevicesInFirstStructureAsync()
         {
             Structure structure = await GetFirstStructureAsync();
@@ -212,6 +289,9 @@ namespace LightwaveRFLinkPlusSharp
         /// Gets the details for the devices in a specified structure. For more details on structures,
         /// see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
         /// </summary>
+        /// <exception cref="StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<Device[]> GetDevicesAsync(string structureId)
         {
             Structure structure = await GetStructureAsync(structureId);
@@ -219,6 +299,8 @@ namespace LightwaveRFLinkPlusSharp
         }
 
 
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task PopulateFeatureValuesAsync(Device device)
         {
             Dictionary<string, int> featureValues = await GetFeatureValuesAsync(device.Features.Select(x => x.Id));
@@ -240,6 +322,9 @@ namespace LightwaveRFLinkPlusSharp
         /// <summary>
         /// Returns true if the device is switched on, or false if not
         /// </summary>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task<bool> GetSwitchStateAsync(Device device)
         {
             int featureValue = await GetFeatureValueAsync(device.SwitchFeatureId);
@@ -249,6 +334,9 @@ namespace LightwaveRFLinkPlusSharp
         /// <summary>
         /// Turn the device on or off
         /// </summary>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         public async Task SetSwitchStateAsync(Device device, bool on)
         {
             await SetFeatureValueAsync(device.SwitchFeatureId, on ? 1 : 0);

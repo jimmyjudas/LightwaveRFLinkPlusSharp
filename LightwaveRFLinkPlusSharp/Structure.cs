@@ -9,14 +9,17 @@ namespace LightwaveRFLinkPlusSharp
 {
     public class Structure
     {
-        public Device[] Devices { get; set; }
+        public Device[] Devices { get; }
 
         internal Structure(JToken structureJson)
         {
-            JToken devices = structureJson["devices"];
-            if (devices != null)
+            try
             {
-                Devices = devices.Select(x => new Device(x)).ToArray();
+                Devices = structureJson["devices"].Select(x => new Device(x)).ToArray();
+            }
+            catch
+            {
+                throw new UnexpectedJsonException("Unable to parse structure's devices", structureJson.ToString());
             }
         }
     }
