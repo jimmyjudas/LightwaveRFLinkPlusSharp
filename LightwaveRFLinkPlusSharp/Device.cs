@@ -71,22 +71,30 @@ namespace LightwaveRFLinkPlusSharp
         /// </summary>
         public string SwitchFeatureId => GetFeatureId("switch");
 
+        public string BulbSetupFeatureId => GetFeatureId("bulbSetup");
         public string ButtonPressFeatureId => GetFeatureId("buttonPress");
         public string CurrentTimeFeatureId => GetFeatureId("currentTime");
         public string DateFeatureId => GetFeatureId("date");
         public string DawnTimeFeatureId => GetFeatureId("dawnTime");
         public string DayFeatureId => GetFeatureId("day");
+        public string DiagnosticsFeatureId => GetFeatureId("diagnostics");
         public string DimLevelFeatureId => GetFeatureId("dimLevel");
+        public string DimSetupFeatureId => GetFeatureId("dimSetup");
         public string DuskTimeFeatureId => GetFeatureId("duskTime");
+        public string EnergyFeatureId => GetFeatureId("energy");
         public string IdentifyFeatureId => GetFeatureId("identify");
         public string LocationLatitudeFeatureId => GetFeatureId("locationLatitude");
         public string LocationLongitudeFeatureId => GetFeatureId("locationLongitude");
         public string MonthFeatureId => GetFeatureId("month");
         public string MonthArrayFeatureId => GetFeatureId("monthArray");
+        public string PeriodOfBroadcastFeatureId => GetFeatureId("periodOfBroadcast");
+        public string PowerFeatureId => GetFeatureId("power");
         public string ProtectionFeatureId => GetFeatureId("protection");
+        public string ResetFeatureId => GetFeatureId("reset");
         public string RGBColorFeatureId => GetFeatureId("rgbColor");
         public string TimeFeatureId => GetFeatureId("time");
         public string TimeZoneFeatureId => GetFeatureId("timeZone");
+        public string UpgradeFeatureId => GetFeatureId("upgrade");
         public string WeekdayFeatureId => GetFeatureId("weekday");
         public string WeekdayArrayFeatureId => GetFeatureId("weekdayArray");
         public string YearFeatureId => GetFeatureId("year");
