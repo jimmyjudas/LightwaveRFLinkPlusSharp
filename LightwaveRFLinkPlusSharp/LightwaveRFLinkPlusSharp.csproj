@@ -1,7 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>James Housley</Authors>
+    <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jimmyjudas/LightwaveRFLinkPlusSharp</PackageProjectUrl>
+    <PackageReleaseNotes>Fixed icon</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
+    <Copyright>Copyright © 2019</Copyright>
+    <PackageIconUrl>https://raw.githubusercontent.com/jimmyjudas/LightwaveRFLinkPlusSharp/fa4d1deac35ed2cde176a1036a54197c0a50f9c4/Images/Lightbulb.png</PackageIconUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
