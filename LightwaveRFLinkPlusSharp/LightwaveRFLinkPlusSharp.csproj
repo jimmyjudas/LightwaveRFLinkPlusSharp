@@ -6,16 +6,23 @@
     <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jimmyjudas/LightwaveRFLinkPlusSharp</PackageProjectUrl>
-    <PackageReleaseNotes>Fixed icon</PackageReleaseNotes>
+    <PackageReleaseNotes>Add link to nicer readme file at top of readme.txt</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
     <Copyright>Copyright © 2019</Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/jimmyjudas/LightwaveRFLinkPlusSharp/fa4d1deac35ed2cde176a1036a54197c0a50f9c4/Images/Lightbulb.png</PackageIconUrl>
-    <Version>1.0.1</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="readme.txt">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
   </ItemGroup>
 
 </Project>
