@@ -35,7 +35,7 @@ namespace LightwaveRFLinkPlusSharp
         private Guid? _previousRequestIdentifier = null;
         private bool _previousRequestRequiredRefresh = false;
         private StringBuilder _tokenRequestLog = new StringBuilder();
-        
+
         internal Authentication(string bearer, string seedRefreshToken = null)
         {
             _bearer = bearer;
@@ -65,7 +65,7 @@ namespace LightwaveRFLinkPlusSharp
             }
 
             _tokenRequestLog.AppendLine($"Access token requested for request {uniqueRequestIdentifier}");
-            
+
             if (forceRefresh)
             {
                 if (_previousRequestRequiredRefresh) // Alas, we already attempted to refresh the token last time so there's nothing we can do now
@@ -76,7 +76,7 @@ namespace LightwaveRFLinkPlusSharp
                 //Try refreshing the access token this time
                 _tokenRequestLog.AppendLine("Force refresh triggered");
                 await RefreshAccessTokenAsync();
-                
+
             }
             else if (_currentAccessToken != null) // We have an access token in memory, so use that one
             {

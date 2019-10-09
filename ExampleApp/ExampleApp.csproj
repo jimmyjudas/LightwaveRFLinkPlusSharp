@@ -51,7 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LightwaveRFLinkPlusSharp\LightwaveRFLinkPlusSharp.csproj">
-      <Project>{B7A5CD36-965D-45C5-B512-13CEF50BFFA4}</Project>
+      <Project>{e0584a6b-dbb7-4ae4-898f-a979e33be12a}</Project>
       <Name>LightwaveRFLinkPlusSharp</Name>
     </ProjectReference>
   </ItemGroup>

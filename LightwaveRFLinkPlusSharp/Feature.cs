@@ -25,7 +25,7 @@ namespace LightwaveRFLinkPlusSharp
         public override string ToString()
         {
             string output = Type;
-            
+
             if (Value.HasValue)
             {
                 output += $": {Value}";
