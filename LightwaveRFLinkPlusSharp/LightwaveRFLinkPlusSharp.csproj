@@ -7,12 +7,12 @@
     <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jimmyjudas/LightwaveRFLinkPlusSharp</PackageProjectUrl>
-    <PackageReleaseNotes>Add link to nicer readme file at top of readme.txt</PackageReleaseNotes>
+    <PackageReleaseNotes>Add GetDuskTimeAsync typed helper method</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
     <Copyright>Copyright © 2019</Copyright>
-    <Version>1.0.3</Version>
     <PackageIconUrl></PackageIconUrl>
+    <Version>1.0.4</Version>
     <PackageIcon>Lightwave.png</PackageIcon>
   </PropertyGroup>
 
