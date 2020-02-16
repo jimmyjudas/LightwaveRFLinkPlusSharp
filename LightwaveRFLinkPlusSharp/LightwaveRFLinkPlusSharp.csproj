@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <Authors>James Housley</Authors>
     <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
