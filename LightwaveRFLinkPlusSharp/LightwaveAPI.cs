@@ -358,6 +358,18 @@ namespace LightwaveRFLinkPlusSharp
             await SetFeatureValueAsync(device.SwitchFeatureId, on ? 1 : 0);
         }
 
+        /// <summary>
+        /// Get the dusk time according to the device. Only works for the Link Plus Hub?
+        /// </summary>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        public async Task<TimeSpan> GetDuskTimeAsync(Device device)
+        {
+            int featureValue = await GetFeatureValueAsync(device.DuskTimeFeatureId);
+            return TimeSpan.FromSeconds(featureValue);
+        }
+
         #endregion
     }
 }

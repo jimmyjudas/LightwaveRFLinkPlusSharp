@@ -113,5 +113,10 @@ namespace LightwaveRFLinkPlusSharp
             Feature match = Features.FirstOrDefault(x => x.Type == type);
             return match?.Id;
         }
+
+        public override string ToString()
+        {
+            return Name;
+        }
     }
 }
