@@ -10,8 +10,9 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
     <Copyright>Copyright © 2019</Copyright>
-    <PackageIconUrl>https://raw.githubusercontent.com/jimmyjudas/LightwaveRFLinkPlusSharp/fa4d1deac35ed2cde176a1036a54197c0a50f9c4/Images/Lightbulb.png</PackageIconUrl>
     <Version>1.0.3</Version>
+    <PackageIconUrl></PackageIconUrl>
+    <PackageIcon>Lightwave.png</PackageIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -27,6 +28,13 @@
       <Pack>true</Pack>
       <PackagePath>\</PackagePath>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\Lightwave.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>
