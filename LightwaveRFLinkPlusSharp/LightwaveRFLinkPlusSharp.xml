@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LightwaveRFLinkPlusSharp</name>
+    </assembly>
+    <members>
+        <member name="T:LightwaveRFLinkPlusSharp.Authentication">
+            <summary>
+            To use the API, the user will have provided a seed refresh token. This will be used to get an access token and a new refresh token. Once the access token expires, the
+            new refresh token will be used to get another pair of new access and refresh tokens. Etc. As the program may be restarted during this process, we cannot rely on these
+            tokens being available in memory, so they are also written to a text file (in AppData\Roaming\LightwaveRFLinkPlusSharp) so they can be read back in at a later date. The
+            flow for accessing the API therefore goes as follows. Starting in <see cref="M:LightwaveRFLinkPlusSharp.Authentication.GetAccessTokenAsync(System.Guid)"/>:
+            1. Use the access token in memory if there is one, otherwise, use the one saved in AppData
+            2. If there is no saved access token available, or the access token does not work, request a new one
+            The flow then moves to <see cref="M:LightwaveRFLinkPlusSharp.Authentication.RefreshAccessTokenAsync(System.Boolean)"/>:
+            3. Use the refresh token in memory if there is one, otherwise, use the one saved in AppData. If this does not exist, or the saved token has already not worked, use the
+               seed refresh token that was initially provided to the class.
+            4. If the seed refresh token stops working at any point, the user will need to request a new refresh token from the Lightwave site
+            </summary>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.Authentication.GetAccessTokenAsync(System.Guid)">
+            <summary>
+            This will return an access token for the API, requesting a new one if needed
+            </summary>
+            <param name="uniqueRequestIdentifier">A unique ID for the request which is used to determine whether this is the second attempt to ask for an access token
+            for the same API request. If this is the case, we know the first access token provided did not work and needs refreshing</param>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.Authentication.RefreshAccessTokenAsync(System.Boolean)">
+            <summary>
+            Attempts to refresh the access token using the refresh token
+            </summary>
+            <param name="useSeedRefreshToken">Whether to use the refresh token from a previous run, or the seed refresh token provided by the user</param>
+        </member>
+        <member name="P:LightwaveRFLinkPlusSharp.Device.Features">
+            <summary>
+            A list of the device's features. If you are wanting a specific feature's ID, use one of the helper
+            properties (e.g. <see cref="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId"/>) or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/> instead
+            </summary>
+        </member>
+        <member name="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId">
+            <summary>
+            Note, the LightwaveAPI class has typed <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device)"/> or <see cref="!:LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
+            </summary>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)">
+            <summary>
+            Gets the ID for a device's feature. Note there are also properties available for many common features - e.g. for
+            the "switch" feature (whether the device is on or off), use SwitchFeatureId instead.
+            </summary>
+            <param name="type">The "type" of the device's desired feature, e.g. the "switch" feature controls whether the device
+            is turned on or not</param>
+            <returns>The ID of the device's feature, which can then be used with <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFeatureValueAsync(System.String)"/> or <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.SetFeatureValueAsync(System.String,System.Int32)"/></returns>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.InvalidRefreshTokenException">
+            <summary>
+            Thrown when all attempts to get a new access token have failed. For details on how to pass in a seed refresh token, see the summary on the LightwaveAPI 
+            constructor. For debugging purposes, a record of the events leading to this failure can be found in this exception's TokenRequestLog property.
+            </summary>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">
+            <summary>
+            Thrown when the web API call returns an unsuccessful status
+            </summary>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">
+            <summary>
+            Thrown when the Json received from the web API call can not be parsed as expected
+            </summary>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.NoStructuresFoundException">
+            <summary>
+            Thrown when no Structures can be found in your LinkPlus ecosystem
+            </summary>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.StructureNotFoundException">
+            <summary>
+            Thrown when the specified Structure cannot be found
+            </summary>
+        </member>
+        <member name="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">
+            <summary>
+            Thrown when the specified Feature cannot be found
+            </summary>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.Feature.ToString">
+            <summary>
+            Displays the Feature's Type and Value, if it has one
+            </summary>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.#ctor(System.String,System.String)">
+            <summary>
+            In order to connect to the Lightwave API you must provide a bearer ID and an initial refresh token. You can get these
+            from https://my.lightwaverf.com > Settings > API. (The bearer ID is the long string labelled "Basic" for some reason.)
+            During use of the API, further refresh tokens will be provided which will be handled for you automatically. If you stop
+            being able to access the API at any point, however, you will have to request a new refresh token from the Lightwave site
+            and provide it in this constructor.
+            </summary>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetStructuresAsync">
+            <summary>
+            Gets the IDs of the structures in your LinkPlus ecosystem. For more details on structures
+            see https://linkpluspublicapi.docs.apiary.io/#introduction/structure. 
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetStructureAsync(System.String)">
+            <summary>
+            Gets the details of the specified structure from your LinkPlus ecosystem. For more details on structures
+            see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
+            </summary>
+            <returns>A JSON object describing the structure</returns>
+            <exception cref="T:LightwaveRFLinkPlusSharp.StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFeatureValueAsync(System.String)">
+            <summary>
+            Gets the value of a specified feature for a device, e.g. whether the device is on or off
+            </summary>
+            <param name="featureId">The ID of the feature on the device. This is not the same as the feature
+            _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
+            (e.g. <see cref="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId"/>) or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/></param>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.SetFeatureValueAsync(System.String,System.Int32)">
+            <summary>
+            Sets the value of a specified feature for a device, e.g. whether the device is on or off
+            </summary>
+            <param name="featureId">The ID of the feature on the device. This is not the same as the feature
+            _type_, e.g. "switch". Instead, get the ID from the Device using either one of the helper properties 
+            (e.g. <see cref="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId"/>) or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/></param>
+            <param name="newValue">The numerical value to which you want to set the feature</param>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFeatureValuesAsync(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Gets the values of a collection of specified features, e.g. whether the device is on or off
+            </summary>
+            <param name="featureIds">A collection of feature IDs</param>
+            <returns>A dictionary of the feature IDs and values. Any unknown feature IDs will return with a value of 0. Any invalid feature IDs will result in a <see cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException"/> being thrown</returns>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFirstStructureAsync">
+            <summary>
+            Gets the details of the first "structure" in your LinkPlus ecosystem. This is a helper for if your ecosystem 
+            only has a single structure; if you have more than one, use <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetStructuresAsync"/> instead. For more details on structures, 
+            see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
+            </summary>
+            <returns>A JSON object describing the structure</returns>
+            <exception cref="T:LightwaveRFLinkPlusSharp.NoStructuresFoundException">Thrown when no Structures can be found in your LinkPlus ecosystem</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDevicesInFirstStructureAsync">
+            <summary>
+            Gets the details of the devices in the first structure in your LinkPlus ecosystem. This is a helper for if your ecosystem 
+            only has a single structure; if you have more than one, use <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetStructuresAsync"/> and <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDevicesAsync(System.String)"/> instead. For more details on 
+            structures, see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.NoStructuresFoundException">Thrown when no Structures can be found in your LinkPlus ecosystem</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDevicesAsync(System.String)">
+            <summary>
+            Gets the details for the devices in a specified structure. For more details on structures,
+            see https://linkpluspublicapi.docs.apiary.io/#introduction/structure.
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.StructureNotFoundException">Thrown when the specified Structure cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.PopulateFeatureValuesAsync(LightwaveRFLinkPlusSharp.Device)">
+            <summary>
+            Populates the specified device's Features with their current values
+            </summary>
+            <param name="device"></param>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device)">
+            <summary>
+            Returns true if the device is switched on, or false if not
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.SetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device,System.Boolean)">
+            <summary>
+            Turn the device on or off
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDuskTimeAsync(LightwaveRFLinkPlusSharp.Device)">
+            <summary>
+            Get the dusk time according to the device. Only works for the Link Plus Hub?
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+    </members>
+</doc>
