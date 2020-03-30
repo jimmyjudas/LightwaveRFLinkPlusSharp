@@ -186,6 +186,20 @@
             <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
             <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
         </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFeatureTimeZoneAdjusted(System.String,System.String)">
+            <summary>
+            Gets the value of a time-based feature for a device, adjusted to fit the local timezone, as the LinkPlus doesn't always
+            seem to adjust for daylight savings time. This should not be used when requesting non-time-based features.
+            </summary>
+            <param name="timeBasedFeatureId">The ID of the desired time-based feature on the device. This is not the same as the feature
+            _type_, e.g. "dawnTime". Instead, get the ID from the Device using either one of the helper properties 
+            (e.g. <see cref="P:LightwaveRFLinkPlusSharp.Device.DawnTimeFeatureId"/>) or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/></param>
+            <param name="timeZoneFeatureId">The ID of the TimeZone feature on the device. Get the ID from the Device using the helper 
+            property <see cref="P:LightwaveRFLinkPlusSharp.Device.TimeZoneFeatureId"/> or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/></param>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
         <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device)">
             <summary>
             Returns true if the device is switched on, or false if not
@@ -204,7 +218,17 @@
         </member>
         <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDuskTimeAsync(LightwaveRFLinkPlusSharp.Device)">
             <summary>
-            Get the dusk time according to the device. Only works for the Link Plus Hub?
+            OBSOLETE: This method does not take into account if the LinkPlus has not updated timezone for daylight 
+            savings. Use <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDuskTimeTimeZoneAdjustedAsync(LightwaveRFLinkPlusSharp.Device)"/> instead.
+            </summary>
+            <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+            <exception cref="T:LightwaveRFLinkPlusSharp.LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        </member>
+        <member name="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDuskTimeTimeZoneAdjustedAsync(LightwaveRFLinkPlusSharp.Device)">
+            <summary>
+            Get the dusk time according to the device. The LinkPlus doesn't always seem to adjust for daylight savings time, so this
+            also queries the timezone from the device and adjusts the returned time to match the computer's timezone.
             </summary>
             <exception cref="T:LightwaveRFLinkPlusSharp.FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
             <exception cref="T:LightwaveRFLinkPlusSharp.UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>

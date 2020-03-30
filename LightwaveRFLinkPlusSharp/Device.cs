@@ -93,7 +93,7 @@ namespace LightwaveRFLinkPlusSharp
         public string ResetFeatureId => GetFeatureId("reset");
         public string RGBColorFeatureId => GetFeatureId("rgbColor");
         public string TimeFeatureId => GetFeatureId("time");
-        public string TimeZoneFeatureId => GetFeatureId("timeZone");
+        public string TimeZoneFeatureId => GetFeatureId("timeZone"); //The current timezone of the LinkPlus. 0 is GMT, while 1 is GMT+1 and -5 is GMT-5
         public string UpgradeFeatureId => GetFeatureId("upgrade");
         public string WeekdayFeatureId => GetFeatureId("weekday");
         public string WeekdayArrayFeatureId => GetFeatureId("weekdayArray");

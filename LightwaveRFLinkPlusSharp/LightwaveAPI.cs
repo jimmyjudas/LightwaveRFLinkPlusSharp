@@ -331,6 +331,34 @@ namespace LightwaveRFLinkPlusSharp
             }
         }
 
+        /// <summary>
+        /// Gets the value of a time-based feature for a device, adjusted to fit the local timezone, as the LinkPlus doesn't always
+        /// seem to adjust for daylight savings time. This should not be used when requesting non-time-based features.
+        /// </summary>
+        /// <param name="timeBasedFeatureId">The ID of the desired time-based feature on the device. This is not the same as the feature
+        /// _type_, e.g. "dawnTime". Instead, get the ID from the Device using either one of the helper properties 
+        /// (e.g. <see cref="Device.DawnTimeFeatureId"/>) or the generic <see cref="Device.GetFeatureId(string)"/></param>
+        /// <param name="timeZoneFeatureId">The ID of the TimeZone feature on the device. Get the ID from the Device using the helper 
+        /// property <see cref="Device.TimeZoneFeatureId"/> or the generic <see cref="Device.GetFeatureId(string)"/></param>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        public async Task<int> GetFeatureTimeZoneAdjusted(string timeBasedFeatureId, string timeZoneFeatureId)
+        {
+            Dictionary<string, int> values = await GetFeatureValuesAsync(new[] { timeZoneFeatureId, timeBasedFeatureId });
+
+            int lightwaveOffsetHours = values[timeZoneFeatureId]; //0 is GMT, while 1 is GMT+1 and -5 is GMT-5
+
+            TimeSpan computerOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+            int computerOffsetHours = computerOffset.Hours;
+
+            int offsetHours = computerOffsetHours - lightwaveOffsetHours;
+
+            int offsetTime = values[timeBasedFeatureId] + (int)TimeSpan.FromHours(offsetHours).TotalSeconds;
+
+            return offsetTime;
+        }
+
         #endregion
 
         #region Typed helper methods for getting and setting the state of various features
@@ -359,14 +387,29 @@ namespace LightwaveRFLinkPlusSharp
         }
 
         /// <summary>
-        /// Get the dusk time according to the device. Only works for the Link Plus Hub?
+        /// OBSOLETE: This method does not take into account if the LinkPlus has not updated timezone for daylight 
+        /// savings. Use <see cref="GetDuskTimeTimeZoneAdjustedAsync(Device)"/> instead.
         /// </summary>
         /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
         /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
         /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        [Obsolete("This method does not take into account if the LinkPlus has not updated timezone for daylight savings. Use GetDuskTimeTimeZoneAdjustedAsync instead")]
         public async Task<TimeSpan> GetDuskTimeAsync(Device device)
         {
             int featureValue = await GetFeatureValueAsync(device.DuskTimeFeatureId);
+            return TimeSpan.FromSeconds(featureValue);
+        }
+
+        /// <summary>
+        /// Get the dusk time according to the device. The LinkPlus doesn't always seem to adjust for daylight savings time, so this
+        /// also queries the timezone from the device and adjusts the returned time to match the computer's timezone.
+        /// </summary>
+        /// <exception cref="FeatureNotFoundException">Thrown when the specified Feature cannot be found</exception>
+        /// <exception cref="UnexpectedJsonException">Thrown when the Json received from the web API call can not be parsed as expected</exception>
+        /// <exception cref="LightwaveAPIRequestException">Thrown when the web API call returns an unsuccessful status</exception>
+        public async Task<TimeSpan> GetDuskTimeTimeZoneAdjustedAsync(Device device)
+        {
+            int featureValue = await GetFeatureTimeZoneAdjusted(device.DuskTimeFeatureId, device.TimeZoneFeatureId);
             return TimeSpan.FromSeconds(featureValue);
         }
 
