@@ -66,11 +66,6 @@ namespace LightwaveRFLinkPlusSharp
 
         #region Properties for accessing the IDs of known feature types
 
-        /// <summary>
-        /// Note, the LightwaveAPI class has typed <see cref="LightwaveAPI.GetSwitchStateAsync(Device)"/> or <see cref="LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
-        /// </summary>
-        public string SwitchFeatureId => GetFeatureId("switch");
-
         public string BulbSetupFeatureId => GetFeatureId("bulbSetup");
         public string ButtonPressFeatureId => GetFeatureId("buttonPress");
         public string CurrentTimeFeatureId => GetFeatureId("currentTime");
@@ -80,7 +75,13 @@ namespace LightwaveRFLinkPlusSharp
         public string DiagnosticsFeatureId => GetFeatureId("diagnostics");
         public string DimLevelFeatureId => GetFeatureId("dimLevel");
         public string DimSetupFeatureId => GetFeatureId("dimSetup");
+
+        /// <summary>
+        /// Feature returns time in seconds. Note, the LightwaveAPI class has a typed <see cref="LightwaveAPI.GetDuskTimeTimeZoneAdjustedAsync(Device)"/>
+        /// helper method
+        /// </summary>
         public string DuskTimeFeatureId => GetFeatureId("duskTime");
+
         public string EnergyFeatureId => GetFeatureId("energy");
         public string IdentifyFeatureId => GetFeatureId("identify");
         public string LocationLatitudeFeatureId => GetFeatureId("locationLatitude");
@@ -92,8 +93,22 @@ namespace LightwaveRFLinkPlusSharp
         public string ProtectionFeatureId => GetFeatureId("protection");
         public string ResetFeatureId => GetFeatureId("reset");
         public string RGBColorFeatureId => GetFeatureId("rgbColor");
+
+        /// <summary>
+        /// Feature returns 1 for on, 0 for off. Note, the LightwaveAPI class has typed <see cref="LightwaveAPI.GetSwitchStateAsync(Device)"/> or 
+        /// <see cref="LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
+        /// </summary>
+        public string SwitchFeatureId => GetFeatureId("switch");
+
         public string TimeFeatureId => GetFeatureId("time");
-        public string TimeZoneFeatureId => GetFeatureId("timeZone"); //The current timezone of the LinkPlus. 0 is GMT, while 1 is GMT+1 and -5 is GMT-5
+
+        /// <summary>
+        /// Feature returns number of seconds (positive or negative) offset from GMT. Note, the LightwaveAPI class has a
+        /// <see cref="LightwaveAPI.GetFeatureTimeZoneAdjusted(string, string)"/> helper method which uses this feature to
+        /// adjust all time-based features to the computer's timezone.
+        /// </summary>
+        public string TimeZoneFeatureId => GetFeatureId("timeZone");
+
         public string UpgradeFeatureId => GetFeatureId("upgrade");
         public string WeekdayFeatureId => GetFeatureId("weekday");
         public string WeekdayArrayFeatureId => GetFeatureId("weekdayArray");

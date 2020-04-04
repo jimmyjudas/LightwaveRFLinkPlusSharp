@@ -347,14 +347,14 @@ namespace LightwaveRFLinkPlusSharp
         {
             Dictionary<string, int> values = await GetFeatureValuesAsync(new[] { timeZoneFeatureId, timeBasedFeatureId });
 
-            int lightwaveOffsetHours = values[timeZoneFeatureId]; //0 is GMT, while 1 is GMT+1 and -5 is GMT-5
+            int lightwaveOffsetSeconds = values[timeZoneFeatureId];
 
             TimeSpan computerOffset = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
-            int computerOffsetHours = computerOffset.Hours;
+            int computerOffsetSeconds = (int)computerOffset.TotalSeconds;
 
-            int offsetHours = computerOffsetHours - lightwaveOffsetHours;
+            int offsetSeconds = computerOffsetSeconds - lightwaveOffsetSeconds;
 
-            int offsetTime = values[timeBasedFeatureId] + (int)TimeSpan.FromHours(offsetHours).TotalSeconds;
+            int offsetTime = values[timeBasedFeatureId] + offsetSeconds;
 
             return offsetTime;
         }

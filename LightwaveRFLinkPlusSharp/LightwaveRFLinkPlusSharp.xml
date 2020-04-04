@@ -37,9 +37,23 @@
             properties (e.g. <see cref="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId"/>) or the generic <see cref="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)"/> instead
             </summary>
         </member>
+        <member name="P:LightwaveRFLinkPlusSharp.Device.DuskTimeFeatureId">
+            <summary>
+            Feature returns time in seconds. Note, the LightwaveAPI class has a typed <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetDuskTimeTimeZoneAdjustedAsync(LightwaveRFLinkPlusSharp.Device)"/>
+            helper method
+            </summary>
+        </member>
         <member name="P:LightwaveRFLinkPlusSharp.Device.SwitchFeatureId">
             <summary>
-            Note, the LightwaveAPI class has typed <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device)"/> or <see cref="!:LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
+            Feature returns 1 for on, 0 for off. Note, the LightwaveAPI class has typed <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetSwitchStateAsync(LightwaveRFLinkPlusSharp.Device)"/> or 
+            <see cref="!:LightwaveAPI.SetSwitchStateAsync(Device)"/> helper methods
+            </summary>
+        </member>
+        <member name="P:LightwaveRFLinkPlusSharp.Device.TimeZoneFeatureId">
+            <summary>
+            Feature returns number of seconds (positive or negative) offset from GMT. Note, the LightwaveAPI class has a
+            <see cref="M:LightwaveRFLinkPlusSharp.LightwaveAPI.GetFeatureTimeZoneAdjusted(System.String,System.String)"/> helper method which uses this feature to
+            adjust all time-based features to the computer's timezone.
             </summary>
         </member>
         <member name="M:LightwaveRFLinkPlusSharp.Device.GetFeatureId(System.String)">

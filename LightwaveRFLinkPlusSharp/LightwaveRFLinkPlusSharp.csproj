@@ -7,12 +7,12 @@
     <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jimmyjudas/LightwaveRFLinkPlusSharp</PackageProjectUrl>
-    <PackageReleaseNotes>Added GetDuskTimeTimeZoneAdjustedAsync to handle a Link Plus hub not being updated to reflect daylight savings</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix time zone adjustment</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
     <Copyright>Copyright © 2019</Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/jimmyjudas/LightwaveRFLinkPlusSharp/master/Images/Lightwave.png</PackageIconUrl>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <PackageIcon>Lightwave.png</PackageIcon>
   </PropertyGroup>
 
