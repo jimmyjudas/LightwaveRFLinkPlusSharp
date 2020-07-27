@@ -174,6 +174,9 @@ namespace LightwaveRFLinkPlusSharp
                     }
                     else
                     {
+                        //Create the directory if it doesn't already exist
+                        Directory.CreateDirectory(Path.GetDirectoryName(_authResponseFileName));
+
                         File.WriteAllText(_authResponseFileName, responseData);
 
                         _currentAccessToken = json["access_token"].ToString();

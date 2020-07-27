@@ -7,12 +7,12 @@
     <Description>A C# binding for the LightwaveRF LinkPlus API</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/jimmyjudas/LightwaveRFLinkPlusSharp</PackageProjectUrl>
-    <PackageReleaseNotes>Fix time zone adjustment</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix DirectoryNotFoundException when running for the first time</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>lightwaverf lightwave api wrapper binding csharp c-sharp c# .NET dotnet</PackageTags>
     <Copyright>Copyright © 2019</Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/jimmyjudas/LightwaveRFLinkPlusSharp/master/Images/Lightwave.png</PackageIconUrl>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
     <PackageIcon>Lightwave.png</PackageIcon>
   </PropertyGroup>
 
